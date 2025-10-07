@@ -1,35 +1,42 @@
-import { View, Text, Image, StyleSheet, ScrollView, Button } from 'react-native';
-import { useLayoutEffect } from 'react';
+import { useContext, useLayoutEffect } from 'react';
+import { View, Text, Image, StyleSheet, ScrollView } from 'react-native';
 
-import { MEALS } from '../assets/data/dummy-data';
-
+import IconButton from '../components/IconButton';
 import List from '../components/MealDetail/List';
 import Subtitle from '../components/MealDetail/Subtitle';
 import MealDetails from '../components/MealDetails';
-import IconButton from '../components/IconButton';
+import { MEALS } from '../assets/data/dummy-data';
+import { FavouritesContext } from '../store/context/favourites-context';
 
 function MealDetailScreen({ route, navigation }) {
-  const mealId = route.params.mealId;
+  const favouriteMealsCtx = useContext(FavouritesContext);
 
+  const mealId = route.params.mealId;
   const selectedMeal = MEALS.find((meal) => meal.id === mealId);
 
-  function headerButtonPressHandler() {
-    console.log('Pressed!');
+  const mealIsFavorite = favouriteMealsCtx.ids.includes(mealId);
+
+  function changeFavoriteStatusHandler() {
+    if (mealIsFavorite) {
+      favouriteMealsCtx.removeFavourite(mealId);
+    } else {
+      favouriteMealsCtx.addFavourite(mealId);
+    }
   }
 
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => {
-         return (
-         <IconButton 
-          icon="star"
-          color="white"
-          onPress={headerButtonPressHandler}
-         />
-         )},
+        return (
+          <IconButton
+            icon={mealIsFavorite ? 'star' : 'star-outline'}
+            color="white"
+            onPress={changeFavoriteStatusHandler}
+          />
+        );
+      },
     });
-  }
-  , [navigation, headerButtonPressHandler]);
+  }, [navigation, changeFavoriteStatusHandler]);
 
   return (
     <ScrollView style={styles.rootContainer}>
@@ -57,7 +64,7 @@ export default MealDetailScreen;
 
 const styles = StyleSheet.create({
   rootContainer: {
-    marginBottom: 32
+    marginBottom: 32,
   },
   image: {
     width: '100%',
